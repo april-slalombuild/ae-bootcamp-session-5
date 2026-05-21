@@ -1,0 +1,6 @@
+# Ignore all files in the scratch directory
+# Working notes are ephemeral and should not be committed
+*
+
+# Allow the .gitignore itself
+!.gitignore
