@@ -6,7 +6,7 @@ class TodoPage {
 
   // Locators - Accessibility-first selectors
   get todoInput() {
-    return this.page.getByRole('textbox', { name: /todo|task/i });
+    return this.page.getByPlaceholder('What needs to be done?');
   }
 
   get addButton() {
@@ -22,25 +22,31 @@ class TodoPage {
   }
 
   todoCheckbox(title) {
-    return this.page.getByRole('checkbox', { name: new RegExp(title, 'i') });
+    // Find checkbox near the todo text
+    return this.page.locator(`li:has-text("${title}") input[type="checkbox"]`).first();
   }
 
-  deleteButton(title) {
-    return this.page.getByRole('button', { name: new RegExp(`delete.*${title}`, 'i') })
-      .or(this.page.locator(`button:near(:text("${title}"))`).filter({ hasText: /delete/i }));
+  deleteButtonForTodo(title) {
+    // Find delete button (aria-label="delete") near the todo text
+    return this.page.locator(`li:has-text("${title}") button[aria-label="delete"]`).first();
   }
 
-  editButton(title) {
-    return this.page.getByRole('button', { name: new RegExp(`edit.*${title}`, 'i') })
-      .or(this.page.locator(`button:near(:text("${title}"))`).filter({ hasText: /edit/i }));
-  }
-
-  editInput(title) {
-    return this.page.getByRole('textbox', { name: new RegExp(title, 'i') });
+  editButtonForTodo(title) {
+    // Find edit button (aria-label="edit") near the todo text
+    return this.page.locator(`li:has-text("${title}") button[aria-label="edit"]`).first();
   }
 
   saveButton() {
-    return this.page.getByRole('button', { name: /save/i });
+    return this.page.getByRole('button', { name: 'save' });
+  }
+
+  cancelButton() {
+    return this.page.getByRole('button', { name: 'cancel' });
+  }
+
+  editInputField() {
+    // TextField that appears when editing (inside list item)
+    return this.page.locator('li input[type="text"]').first();
   }
 
   // Actions
@@ -54,7 +60,7 @@ class TodoPage {
   }
 
   async deleteTodo(title) {
-    await this.deleteButton(title).first().click();
+    await this.deleteButtonForTodo(title).click();
   }
 
   async toggleTodo(title) {
@@ -62,8 +68,8 @@ class TodoPage {
   }
 
   async editTodo(oldTitle, newTitle) {
-    await this.editButton(oldTitle).first().click();
-    await this.editInput(oldTitle).fill(newTitle);
+    await this.editButtonForTodo(oldTitle).click();
+    await this.editInputField().fill(newTitle);
     await this.saveButton().click();
   }
 
@@ -87,7 +93,8 @@ class TodoPage {
   }
 
   async getTodoCount() {
-    return await this.page.locator('[role="listitem"]').count();
+    // Count list items in the todo list
+    return await this.page.locator('ul li').count();
   }
 }
 
